@@ -1,0 +1,14 @@
+services:
+  ubuntu:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '3'
+    volumes:
+      - ./:/app
+    command: ["sleep","infinity"]
+    restart: no
