@@ -285,6 +285,7 @@ static int zend_jit_needs_call_chain(zend_call_info *call_info, uint32_t b, cons
 					case ZEND_JMP_SET:
 					case ZEND_COALESCE:
 					case ZEND_JMP_NULL:
+					case ZEND_JMP_NOT_NULL:
 					case ZEND_ASSERT_CHECK:
 					case ZEND_CATCH:
 					case ZEND_DECLARE_ANON_CLASS:
@@ -370,6 +371,7 @@ static int zend_jit_needs_call_chain(zend_call_info *call_info, uint32_t b, cons
 				case ZEND_JMP_SET:
 				case ZEND_COALESCE:
 				case ZEND_JMP_NULL:
+				case ZEND_JMP_NOT_NULL:
 				case ZEND_ASSERT_CHECK:
 				case ZEND_CATCH:
 				case ZEND_DECLARE_ANON_CLASS:
@@ -2798,6 +2800,7 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 				case ZEND_JMP_SET:
 				case ZEND_COALESCE:
 				case ZEND_JMP_NULL:
+				case ZEND_JMP_NOT_NULL:
 				case ZEND_FE_RESET_R:
 				case ZEND_FE_RESET_RW:
 				case ZEND_ASSERT_CHECK:

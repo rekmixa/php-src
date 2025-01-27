@@ -155,6 +155,7 @@ char *get_token_type_name(int token_type)
 		case T_UNSET_CAST: return "T_UNSET_CAST";
 		case T_OBJECT_OPERATOR: return "T_OBJECT_OPERATOR";
 		case T_NULLSAFE_OBJECT_OPERATOR: return "T_NULLSAFE_OBJECT_OPERATOR";
+		case T_NOT_NULL_ASSERTION_OPERATOR: return "T_NOT_NULL_ASSERTION_OPERATOR";
 		case T_DOUBLE_ARROW: return "T_DOUBLE_ARROW";
 		case T_COMMENT: return "T_COMMENT";
 		case T_DOC_COMMENT: return "T_DOC_COMMENT";

@@ -176,6 +176,7 @@ static void zend_optimize_block(zend_basic_block *block, zend_op_array *op_array
 					 && zend_optimizer_update_op1_const(op_array, opline, &c)) {
 						VAR_SOURCE(op1) = NULL;
 						if (opline->opcode != ZEND_JMP_NULL
+						 && opline->opcode != ZEND_JMP_NOT_NULL
 						 && !zend_bitset_in(used_ext, VAR_NUM(src->result.var))) {
 							literal_dtor(&ZEND_OP1_LITERAL(src));
 							MAKE_NOP(src);
@@ -1015,6 +1016,7 @@ static void assemble_code_blocks(zend_cfg *cfg, zend_op_array *op_array, zend_op
 			case ZEND_COALESCE:
 			case ZEND_ASSERT_CHECK:
 			case ZEND_JMP_NULL:
+			case ZEND_JMP_NOT_NULL:
 			case ZEND_BIND_INIT_STATIC_OR_JMP:
 			case ZEND_JMP_FRAMELESS:
 				ZEND_SET_OP_JMP_ADDR(opline, opline->op2, new_opcodes + blocks[b->successors[0]].start);
@@ -1238,6 +1240,7 @@ static void zend_jmp_optimization(zend_basic_block *block, zend_op_array *op_arr
 		case ZEND_JMP_SET:
 		case ZEND_COALESCE:
 		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 			jmp_hitlist_count = 0;
 
 			target_block = get_target_block(cfg, block, 0, opt_count);

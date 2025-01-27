@@ -1011,6 +1011,7 @@ ZEND_API zend_result ZEND_FASTCALL zend_ast_evaluate_inner(
 		}
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 		{
 			if (UNEXPECTED(zend_ast_evaluate_ex(&op1, ast->child[0], scope, &short_circuited, ctx) != SUCCESS)) {
 				return FAILURE;
@@ -1019,6 +1020,10 @@ ZEND_API zend_result ZEND_FASTCALL zend_ast_evaluate_inner(
 				*short_circuited_ptr = true;
 				ZVAL_NULL(result);
 				return SUCCESS;
+			}
+			if (ast->kind == ZEND_AST_NOT_NULL_ASSERTION_PROP && Z_TYPE(op1) == IS_NULL) {
+				zend_throw_error(NULL, "Trying to access property on null");
+				return FAILURE;
 			}
 			if (ast->kind == ZEND_AST_NULLSAFE_PROP && Z_TYPE(op1) == IS_NULL) {
 				*short_circuited_ptr = true;
@@ -2223,8 +2228,9 @@ simple_list:
 			break;
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			zend_ast_export_ex(str, ast->child[0], 0, indent);
-			smart_str_appends(str, ast->kind == ZEND_AST_NULLSAFE_PROP ? "?->" : "->");
+			smart_str_appends(str, ast->kind == ZEND_AST_NULLSAFE_PROP ? "?->" : (ast->kind == ZEND_AST_NOT_NULL_ASSERTION_PROP ? "!->" : "->"));
 			zend_ast_export_var(str, ast->child[1], 0, indent);
 			break;
 		case ZEND_AST_STATIC_PROP:
@@ -2537,8 +2543,9 @@ simple_list:
 		/* 3 child nodes */
 		case ZEND_AST_METHOD_CALL:
 		case ZEND_AST_NULLSAFE_METHOD_CALL:
+		case ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL:
 			zend_ast_export_ex(str, ast->child[0], 0, indent);
-			smart_str_appends(str, ast->kind == ZEND_AST_NULLSAFE_METHOD_CALL ? "?->" : "->");
+			smart_str_appends(str, ast->kind == ZEND_AST_NULLSAFE_METHOD_CALL ? "?->" : (ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL ? "!->" : "->"));
 			zend_ast_export_var(str, ast->child[1], 0, indent);
 			smart_str_appendc(str, '(');
 			zend_ast_export_ex(str, ast->child[2], 0, indent);

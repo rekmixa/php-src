@@ -367,6 +367,7 @@ ZEND_API void zend_build_cfg(zend_arena **arena, const zend_op_array *op_array, 
 			case ZEND_COALESCE:
 			case ZEND_ASSERT_CHECK:
 			case ZEND_JMP_NULL:
+			case ZEND_JMP_NOT_NULL:
 			case ZEND_BIND_INIT_STATIC_OR_JMP:
 			case ZEND_JMP_FRAMELESS:
 				BB_START(OP_JMP_ADDR(opline, opline->op2) - op_array->opcodes);
@@ -521,6 +522,7 @@ ZEND_API void zend_build_cfg(zend_arena **arena, const zend_op_array *op_array, 
 			case ZEND_COALESCE:
 			case ZEND_ASSERT_CHECK:
 			case ZEND_JMP_NULL:
+			case ZEND_JMP_NOT_NULL:
 			case ZEND_BIND_INIT_STATIC_OR_JMP:
 			case ZEND_JMP_FRAMELESS:
 				block->successors_count = 2;

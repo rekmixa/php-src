@@ -145,6 +145,7 @@ static inline bool may_have_side_effects(
 		case ZEND_COALESCE:
 		case ZEND_ASSERT_CHECK:
 		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 		case ZEND_BIND_INIT_STATIC_OR_JMP:
 		case ZEND_JMP_FRAMELESS:
 			/* For our purposes a jumps and branches are side effects. */

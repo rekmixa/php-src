@@ -2486,9 +2486,11 @@ static bool zend_ast_kind_is_short_circuited(zend_ast_kind ast_kind)
 		case ZEND_AST_DIM:
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 		case ZEND_AST_STATIC_PROP:
 		case ZEND_AST_METHOD_CALL:
 		case ZEND_AST_NULLSAFE_METHOD_CALL:
+		case ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL:
 		case ZEND_AST_STATIC_CALL:
 			return 1;
 		default:
@@ -2504,6 +2506,8 @@ static bool zend_ast_is_short_circuited(const zend_ast *ast)
 		case ZEND_AST_STATIC_PROP:
 		case ZEND_AST_METHOD_CALL:
 		case ZEND_AST_STATIC_CALL:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL:
 			return zend_ast_is_short_circuited(ast->child[0]);
 		case ZEND_AST_NULLSAFE_PROP:
 		case ZEND_AST_NULLSAFE_METHOD_CALL:
@@ -2744,6 +2748,7 @@ static inline bool zend_is_variable(zend_ast *ast) /* {{{ */
 		|| ast->kind == ZEND_AST_DIM
 		|| ast->kind == ZEND_AST_PROP
 		|| ast->kind == ZEND_AST_NULLSAFE_PROP
+		|| ast->kind == ZEND_AST_NOT_NULL_ASSERTION_PROP
 		|| ast->kind == ZEND_AST_STATIC_PROP;
 }
 /* }}} */
@@ -2753,6 +2758,7 @@ static inline bool zend_is_call(zend_ast *ast) /* {{{ */
 	return ast->kind == ZEND_AST_CALL
 		|| ast->kind == ZEND_AST_METHOD_CALL
 		|| ast->kind == ZEND_AST_NULLSAFE_METHOD_CALL
+		|| ast->kind == ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL
 		|| ast->kind == ZEND_AST_STATIC_CALL;
 }
 /* }}} */
@@ -3504,6 +3510,7 @@ static void zend_compile_assign(znode *result, zend_ast *ast) /* {{{ */
 			return;
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			offset = zend_delayed_compile_begin();
 			zend_delayed_compile_prop(result, var_ast, BP_VAR_W);
 			zend_compile_expr(&expr_node, expr_ast);
@@ -3675,6 +3682,7 @@ static void zend_compile_compound_assign(znode *result, zend_ast *ast) /* {{{ */
 			return;
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			offset = zend_delayed_compile_begin();
 			zend_delayed_compile_prop(result, var_ast, BP_VAR_RW);
 			zend_compile_expr(&expr_node, expr_ast);
@@ -5574,6 +5582,7 @@ static void zend_compile_unset(zend_ast *ast) /* {{{ */
 			return;
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			opline = zend_compile_prop(NULL, var_ast, BP_VAR_UNSET, 0);
 			opline->opcode = ZEND_UNSET_OBJ;
 			return;
@@ -7477,7 +7486,7 @@ static void zend_property_hook_find_property_usage(zend_ast **ast_ptr, void *_co
 
 	if (ast == NULL) {
 		return;
-	} else if (ast->kind == ZEND_AST_PROP || ast->kind == ZEND_AST_NULLSAFE_PROP) {
+	} else if (ast->kind == ZEND_AST_PROP || ast->kind == ZEND_AST_NULLSAFE_PROP || ast->kind == ZEND_AST_NOT_NULL_ASSERTION_PROP) {
 		zend_ast *object_ast = ast->child[0];
 		zend_ast *property_ast = ast->child[1];
 
@@ -10157,7 +10166,7 @@ static void zend_compile_post_incdec(znode *result, zend_ast *ast) /* {{{ */
 
 	zend_ensure_writable_variable(var_ast);
 
-	if (var_ast->kind == ZEND_AST_PROP || var_ast->kind == ZEND_AST_NULLSAFE_PROP) {
+	if (var_ast->kind == ZEND_AST_PROP || var_ast->kind == ZEND_AST_NULLSAFE_PROP || var_ast->kind == ZEND_AST_NOT_NULL_ASSERTION_PROP) {
 		zend_op *opline = zend_compile_prop(NULL, var_ast, BP_VAR_RW, 0);
 		opline->opcode = ast->kind == ZEND_AST_POST_INC ? ZEND_POST_INC_OBJ : ZEND_POST_DEC_OBJ;
 		zend_make_tmp_result(result, opline);
@@ -10184,7 +10193,7 @@ static void zend_compile_pre_incdec(znode *result, zend_ast *ast) /* {{{ */
 
 	zend_ensure_writable_variable(var_ast);
 
-	if (var_ast->kind == ZEND_AST_PROP || var_ast->kind == ZEND_AST_NULLSAFE_PROP) {
+	if (var_ast->kind == ZEND_AST_PROP || var_ast->kind == ZEND_AST_NULLSAFE_PROP || var_ast->kind == ZEND_AST_NOT_NULL_ASSERTION_PROP) {
 		zend_op *opline = zend_compile_prop(result, var_ast, BP_VAR_RW, 0);
 		opline->opcode = ast->kind == ZEND_AST_PRE_INC ? ZEND_PRE_INC_OBJ : ZEND_PRE_DEC_OBJ;
 		opline->result_type = IS_TMP_VAR;
@@ -10405,6 +10414,7 @@ static void zend_compile_assign_coalesce(znode *result, zend_ast *ast) /* {{{ */
 			break;
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			opline->opcode = ZEND_ASSIGN_OBJ;
 			opline->result_type = IS_TMP_VAR;
 			var_node_w.op_type = IS_TMP_VAR;
@@ -10624,6 +10634,7 @@ static void zend_compile_isset_or_empty(znode *result, zend_ast *ast) /* {{{ */
 			break;
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			opline = zend_compile_prop(result, var_ast, BP_VAR_IS, 0);
 			opline->opcode = ZEND_ISSET_ISEMPTY_PROP_OBJ;
 			break;
@@ -11078,6 +11089,7 @@ static bool zend_is_allowed_in_const_expr(zend_ast_kind kind) /* {{{ */
 		|| kind == ZEND_AST_NEW || kind == ZEND_AST_ARG_LIST
 		|| kind == ZEND_AST_NAMED_ARG
 		|| kind == ZEND_AST_PROP || kind == ZEND_AST_NULLSAFE_PROP
+		|| kind == ZEND_AST_NOT_NULL_ASSERTION_PROP
 		|| kind == ZEND_AST_CLOSURE;
 }
 /* }}} */
@@ -11493,10 +11505,12 @@ static void zend_compile_expr_inner(znode *result, zend_ast *ast) /* {{{ */
 		case ZEND_AST_DIM:
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 		case ZEND_AST_STATIC_PROP:
 		case ZEND_AST_CALL:
 		case ZEND_AST_METHOD_CALL:
 		case ZEND_AST_NULLSAFE_METHOD_CALL:
+		case ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL:
 		case ZEND_AST_STATIC_CALL:
 		case ZEND_AST_PARENT_PROPERTY_HOOK_CALL:
 			zend_compile_var(result, ast, BP_VAR_R, 0);
@@ -11631,6 +11645,7 @@ static zend_op *zend_compile_var_inner(znode *result, zend_ast *ast, uint32_t ty
 			case ZEND_AST_CALL:
 			case ZEND_AST_METHOD_CALL:
 			case ZEND_AST_NULLSAFE_METHOD_CALL:
+			case ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL:
 			case ZEND_AST_STATIC_CALL:
 				zend_compile_memoized_expr(result, ast);
 				/* This might not actually produce an opcode, e.g. for expressions evaluated at comptime. */
@@ -11645,6 +11660,7 @@ static zend_op *zend_compile_var_inner(znode *result, zend_ast *ast, uint32_t ty
 			return zend_compile_dim(result, ast, type, by_ref);
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			return zend_compile_prop(result, ast, type, by_ref);
 		case ZEND_AST_STATIC_PROP:
 			return zend_compile_static_prop(result, ast, type, by_ref, 0);
@@ -11656,6 +11672,7 @@ static zend_op *zend_compile_var_inner(znode *result, zend_ast *ast, uint32_t ty
 			return NULL;
 		case ZEND_AST_METHOD_CALL:
 		case ZEND_AST_NULLSAFE_METHOD_CALL:
+		case ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL:
 			zend_compile_method_call(result, ast, type);
 			return NULL;
 		case ZEND_AST_STATIC_CALL:
@@ -11692,6 +11709,7 @@ static zend_op *zend_delayed_compile_var(znode *result, zend_ast *ast, uint32_t 
 			return zend_delayed_compile_dim(result, ast, type, by_ref);
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 		{
 			zend_op *opline = zend_delayed_compile_prop(result, ast, type);
 			if (by_ref) {
@@ -11989,6 +12007,7 @@ static void zend_eval_const_expr(zend_ast **ast_ptr) /* {{{ */
 			return;
 		case ZEND_AST_PROP:
 		case ZEND_AST_NULLSAFE_PROP:
+		case ZEND_AST_NOT_NULL_ASSERTION_PROP:
 			zend_eval_const_expr(&ast->child[0]);
 			zend_eval_const_expr(&ast->child[1]);
 			return;

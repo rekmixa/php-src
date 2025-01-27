@@ -641,7 +641,8 @@ bool zend_optimizer_replace_by_const(zend_op_array *op_array,
 				case ZEND_SWITCH_STRING:
 				case ZEND_MATCH:
 				case ZEND_MATCH_ERROR:
-				case ZEND_JMP_NULL: {
+				case ZEND_JMP_NULL:
+				case ZEND_JMP_NOT_NULL: {
 					zend_op *end = op_array->opcodes + op_array->last;
 					while (opline < end) {
 						if (opline->op1_type == type && opline->op1.var == var) {
@@ -655,6 +656,7 @@ bool zend_optimizer_replace_by_const(zend_op_array *op_array,
 								&& opline->opcode != ZEND_MATCH
 								&& opline->opcode != ZEND_MATCH_ERROR
 								&& opline->opcode != ZEND_JMP_NULL
+								&& opline->opcode != ZEND_JMP_NOT_NULL
 								&& (opline->opcode != ZEND_FREE
 									|| opline->extended_value != ZEND_FREE_ON_RETURN);
 
@@ -721,6 +723,7 @@ void zend_optimizer_migrate_jump(zend_op_array *op_array, zend_op *new_opline, z
 		case ZEND_COALESCE:
 		case ZEND_ASSERT_CHECK:
 		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 		case ZEND_BIND_INIT_STATIC_OR_JMP:
 		case ZEND_JMP_FRAMELESS:
 			ZEND_SET_OP_JMP_ADDR(new_opline, new_opline->op2, ZEND_OP2_JMP_ADDR(opline));
@@ -766,6 +769,7 @@ void zend_optimizer_shift_jump(zend_op_array *op_array, zend_op *opline, uint32_
 		case ZEND_COALESCE:
 		case ZEND_ASSERT_CHECK:
 		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 		case ZEND_BIND_INIT_STATIC_OR_JMP:
 		case ZEND_JMP_FRAMELESS:
 			ZEND_SET_OP_JMP_ADDR(opline, opline->op2, ZEND_OP2_JMP_ADDR(opline) - shiftlist[ZEND_OP2_JMP_ADDR(opline) - op_array->opcodes]);
@@ -1264,6 +1268,7 @@ static void zend_redo_pass_two(zend_op_array *op_array)
 			case ZEND_FE_RESET_RW:
 			case ZEND_ASSERT_CHECK:
 			case ZEND_JMP_NULL:
+			case ZEND_JMP_NOT_NULL:
 			case ZEND_BIND_INIT_STATIC_OR_JMP:
 			case ZEND_JMP_FRAMELESS:
 				opline->op2.jmp_addr = &op_array->opcodes[opline->op2.jmp_addr - old_opcodes];
@@ -1386,6 +1391,7 @@ static void zend_redo_pass_two_ex(zend_op_array *op_array, zend_ssa *ssa)
 			case ZEND_FE_RESET_RW:
 			case ZEND_ASSERT_CHECK:
 			case ZEND_JMP_NULL:
+			case ZEND_JMP_NOT_NULL:
 			case ZEND_BIND_INIT_STATIC_OR_JMP:
 			case ZEND_JMP_FRAMELESS:
 				opline->op2.jmp_addr = &op_array->opcodes[opline->op2.jmp_addr - old_opcodes];

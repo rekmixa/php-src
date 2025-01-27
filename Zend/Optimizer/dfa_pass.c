@@ -665,6 +665,7 @@ static void zend_ssa_replace_control_link(zend_op_array *op_array, zend_ssa *ssa
 			case ZEND_COALESCE:
 			case ZEND_ASSERT_CHECK:
 			case ZEND_JMP_NULL:
+			case ZEND_JMP_NOT_NULL:
 			case ZEND_BIND_INIT_STATIC_OR_JMP:
 			case ZEND_JMP_FRAMELESS:
 				if (ZEND_OP2_JMP_ADDR(opline) == op_array->opcodes + old->start) {
@@ -921,6 +922,7 @@ optimize_jmpnz:
 					break;
 				}
 				case ZEND_JMP_NULL:
+				case ZEND_JMP_NOT_NULL:
 				{
 					zend_ssa_var *var = &ssa->vars[ssa_op->result_def];
 					if (opline->op1_type == IS_CONST

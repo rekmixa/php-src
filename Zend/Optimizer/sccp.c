@@ -1580,6 +1580,7 @@ static void sccp_visit_instr(scdf_ctx *scdf, zend_op *opline, zend_ssa_op *ssa_o
 			SET_RESULT(result, op1);
 			break;
 		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 			switch (opline->extended_value & ZEND_SHORT_CIRCUITING_CHAIN_MASK) {
 				case ZEND_SHORT_CIRCUITING_CHAIN_EXPR:
 					ZVAL_NULL(&zv);
@@ -1887,7 +1888,7 @@ static void sccp_mark_feasible_successors(
 		case ZEND_COALESCE:
 			s = (Z_TYPE_P(op1) == IS_NULL);
 			break;
-		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 			s = (Z_TYPE_P(op1) != IS_NULL);
 			break;
 		case ZEND_FE_RESET_R:
@@ -2179,6 +2180,7 @@ static int try_remove_definition(sccp_ctx *ctx, int var_num, zend_ssa_var *var, 
 					|| opline->opcode == ZEND_JMP_SET
 					|| opline->opcode == ZEND_COALESCE
 					|| opline->opcode == ZEND_JMP_NULL
+					|| opline->opcode == ZEND_JMP_NOT_NULL
 					|| opline->opcode == ZEND_FE_RESET_R
 					|| opline->opcode == ZEND_FE_RESET_RW
 					|| opline->opcode == ZEND_FE_FETCH_R

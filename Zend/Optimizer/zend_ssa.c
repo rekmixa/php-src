@@ -280,6 +280,14 @@ static void place_essa_pis(
 					}
 				}
 				continue;
+			case ZEND_JMP_NOT_NULL:
+				if (opline->op1_type == IS_CV) {
+					int var = EX_VAR_TO_NUM(opline->op1.var);
+					if ((pi = add_pi(arena, op_array, dfg, ssa, j, blocks[j].successors[2], var))) {
+						pi_not_type_mask(pi, MAY_BE_NULL);
+					}
+				}
+				continue;
 			default:
 				continue;
 		}

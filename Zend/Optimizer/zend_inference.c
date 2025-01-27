@@ -2724,6 +2724,7 @@ static zend_always_inline zend_result _zend_update_type_info(
 			COPY_SSA_OBJ_TYPE(ssa_op->op1_use, ssa_op->result_def);
 			break;
 		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 		{
 			uint32_t short_circuiting_type = opline->extended_value & ZEND_SHORT_CIRCUITING_CHAIN_MASK;
 			if (short_circuiting_type == ZEND_SHORT_CIRCUITING_CHAIN_EXPR) {
@@ -5027,6 +5028,7 @@ ZEND_API bool zend_may_throw_ex(const zend_op *opline, const zend_ssa_op *ssa_op
 		case ZEND_FUNC_GET_ARGS:
 		case ZEND_COPY_TMP:
 		case ZEND_JMP_NULL:
+		case ZEND_JMP_NOT_NULL:
 		case ZEND_JMP_FRAMELESS:
 			return 0;
 		case ZEND_IS_IDENTICAL:

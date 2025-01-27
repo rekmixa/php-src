@@ -219,6 +219,7 @@ static YYSIZE_T zend_yytnamerr(char*, const char*);
 %token T_UNSET_CAST  "'(unset)'"
 %token T_OBJECT_OPERATOR "'->'"
 %token T_NULLSAFE_OBJECT_OPERATOR "'?->'"
+%token T_NOT_NULL_ASSERTION_OPERATOR "'!->'"
 %token T_DOUBLE_ARROW    "'=>'"
 %token T_COMMENT         "comment"
 %token T_DOC_COMMENT     "doc comment"
@@ -1515,6 +1516,8 @@ callable_variable:
 			{ $$ = zend_ast_create(ZEND_AST_METHOD_CALL, $1, $3, $4); }
 	|	array_object_dereferenceable T_NULLSAFE_OBJECT_OPERATOR property_name argument_list
 			{ $$ = zend_ast_create(ZEND_AST_NULLSAFE_METHOD_CALL, $1, $3, $4); }
+	|	array_object_dereferenceable T_NOT_NULL_ASSERTION_OPERATOR property_name argument_list
+			{ $$ = zend_ast_create(ZEND_AST_NOT_NULL_ASSERTION_METHOD_CALL, $1, $3, $4); }
 	|	function_call { $$ = $1; }
 ;
 
@@ -1527,6 +1530,8 @@ variable:
 			{ $$ = zend_ast_create(ZEND_AST_PROP, $1, $3); }
 	|	array_object_dereferenceable T_NULLSAFE_OBJECT_OPERATOR property_name
 			{ $$ = zend_ast_create(ZEND_AST_NULLSAFE_PROP, $1, $3); }
+	|	array_object_dereferenceable T_NOT_NULL_ASSERTION_OPERATOR property_name
+			{ $$ = zend_ast_create(ZEND_AST_NOT_NULL_ASSERTION_PROP, $1, $3); }
 ;
 
 simple_variable:
@@ -1551,6 +1556,8 @@ new_variable:
 			{ $$ = zend_ast_create(ZEND_AST_PROP, $1, $3); }
 	|	new_variable T_NULLSAFE_OBJECT_OPERATOR property_name
 			{ $$ = zend_ast_create(ZEND_AST_NULLSAFE_PROP, $1, $3); }
+	|	new_variable T_NOT_NULL_ASSERTION_OPERATOR property_name
+			{ $$ = zend_ast_create(ZEND_AST_NOT_NULL_ASSERTION_PROP, $1, $3); }
 	|	class_name T_PAAMAYIM_NEKUDOTAYIM simple_variable
 			{ $$ = zend_ast_create(ZEND_AST_STATIC_PROP, $1, $3); }
 	|	new_variable T_PAAMAYIM_NEKUDOTAYIM simple_variable
@@ -1627,6 +1634,9 @@ encaps_var:
 			      zend_ast_create(ZEND_AST_VAR, $1), $3); }
 	|	T_VARIABLE T_NULLSAFE_OBJECT_OPERATOR T_STRING
 			{ $$ = zend_ast_create(ZEND_AST_NULLSAFE_PROP,
+			      zend_ast_create(ZEND_AST_VAR, $1), $3); }
+	|	T_VARIABLE T_NOT_NULL_ASSERTION_OPERATOR T_STRING
+			{ $$ = zend_ast_create(ZEND_AST_NOT_NULL_ASSERTION_PROP,
 			      zend_ast_create(ZEND_AST_VAR, $1), $3); }
 	|	T_DOLLAR_OPEN_CURLY_BRACES expr '}'
 			{ $$ = zend_ast_create_ex(ZEND_AST_VAR, ZEND_ENCAPS_VAR_DOLLAR_CURLY_VAR_VAR, $2); }
