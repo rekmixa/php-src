@@ -11,7 +11,7 @@ git reset --hard
 Entering docker:
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 docker compose exec ubuntu bash
 ```
 
