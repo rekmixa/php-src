@@ -34,6 +34,11 @@ Running tests:
 make TEST_PHP_ARGS=-j4 test
 ```
 
+Running single test:
+```bash
+sapi/cli/php run-tests.php -P Zend/tests/arrow_functions/009.phpt
+```
+
 Installing PHP:
 
 ```bash
