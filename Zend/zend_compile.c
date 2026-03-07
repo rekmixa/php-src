@@ -4014,9 +4014,9 @@ static bool zend_compile_call_common(znode *result, zend_ast *args_ast, const ze
 		/* opcode array may be reallocated, so don't access opcode field after zend_emit_op_tmp(). */
 		uint8_t opcode = opline->opcode;
 
-		if (opcode == ZEND_NEW) {
-			zend_error_noreturn(E_COMPILE_ERROR, "Cannot create Closure for new expression");
-		}
+//		if (opcode == ZEND_NEW) {
+//			zend_error_noreturn(E_COMPILE_ERROR, "Cannot create Closure for new expression");
+//		}
 
 		zend_ast_list *args = zend_ast_get_list(((zend_ast_fcc*)args_ast)->args);
 		if (args->children != 1 || args->child[0]->attr != ZEND_PLACEHOLDER_VARIADIC) {

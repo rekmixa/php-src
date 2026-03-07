@@ -37429,6 +37429,22 @@ static ZEND_OPCODE_HANDLER_RET ZEND_OPCODE_HANDLER_FUNC_CCONV ZEND_CALLABLE_CONV
 	USE_OPLINE
 	zend_execute_data *call = EX(call);
 
+	if ((opline - 1)->opcode == ZEND_NEW) {
+    	zend_class_entry *ce;
+        ce = zend_fetch_class(Z_STR_P(RT_CONSTANT(opline - 1, (opline - 1)->op1)), ZEND_FETCH_CLASS_AUTO);
+		zend_internal_function *func = emalloc(sizeof(zend_internal_function));
+		func->type = ZEND_INTERNAL_FUNCTION;
+		func->function_name = zend_string_init("new", sizeof("new")-1, 0);
+		func->scope = ce;
+		func->handler = zend_new_callable_handler;
+		func->num_args = 0;
+		func->required_num_args = 0;
+		func->arg_info = NULL;
+    	zend_function *callable = (zend_function*)func;
+//    	call->func = callable;
+//	    zend_error_noreturn(E_COMPILE_ERROR, "test error");
+	}
+
 	if (opline->extended_value != (uint32_t)-1) {
 		zend_object *closure = CACHED_PTR(opline->extended_value);
 		if (closure) {
@@ -89830,6 +89846,22 @@ static ZEND_OPCODE_HANDLER_RET ZEND_OPCODE_HANDLER_CCONV ZEND_CALLABLE_CONVERT_S
 {
 	USE_OPLINE
 	zend_execute_data *call = EX(call);
+
+	if ((opline - 1)->opcode == ZEND_NEW) {
+    	zend_class_entry *ce;
+        ce = zend_fetch_class(Z_STR_P(RT_CONSTANT(opline - 1, (opline - 1)->op1)), ZEND_FETCH_CLASS_AUTO);
+		zend_internal_function *func = emalloc(sizeof(zend_internal_function));
+		func->type = ZEND_INTERNAL_FUNCTION;
+		func->function_name = zend_string_init("new", sizeof("new")-1, 0);
+		func->scope = ce;
+		func->handler = zend_new_callable_handler;
+		func->num_args = 0;
+		func->required_num_args = 0;
+		func->arg_info = NULL;
+    	zend_function *callable = (zend_function*)func;
+//    	call->func = callable;
+//	    zend_error_noreturn(E_COMPILE_ERROR, "test error");
+	}
 
 	if (opline->extended_value != (uint32_t)-1) {
 		zend_object *closure = CACHED_PTR(opline->extended_value);

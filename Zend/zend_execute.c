@@ -4955,6 +4955,21 @@ static void cleanup_live_vars(zend_execute_data *execute_data, uint32_t op_num, 
 }
 /* }}} */
 
+static void zend_new_callable_handler(INTERNAL_FUNCTION_PARAMETERS) {
+    zend_function *func = EX(func);
+    zend_class_entry *ce = func->common.scope;
+    zend_object *object;
+
+    object = zend_objects_new(ce);
+
+    if (ce->constructor) {
+    	// TODO
+    }
+
+    RETURN_OBJ(object);
+}
+/* }}} */
+
 ZEND_API void zend_cleanup_unfinished_execution(zend_execute_data *execute_data, uint32_t op_num, uint32_t catch_op_num) {
 	cleanup_unfinished_calls(execute_data, op_num);
 	cleanup_live_vars(execute_data, op_num, catch_op_num);
